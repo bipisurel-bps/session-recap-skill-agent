@@ -1,20 +1,36 @@
 ---
 name: tldr
-description: "Bikin ringkasan singkat dari session yang lagi jalan. Dua bagian: kerjaan yang udah selesai dan status task terakhir. Trigger: user bilang 'tldr', 'recap', 'summarize', 'where are we', 'udah ngapain aja', atau /tldr."
+description: "Generate a quick recap of the current session. Two parts: completed work and current task status. Trigger: user says 'tldr', 'recap', 'summarize', 'where are we', 'udah ngapain aja', or /tldr."
+version: 1.1.0
+metadata:
+  hermes:
+    tags: [session, recap, tldr, summary, productivity]
 ---
 
 # TLDR — Session Recap
 
-Bikin ringkasan cepat dari session. Formatnya ringkas, scannable, dan langsung ke inti.
+Generate a quick session recap. Format is concise, scannable, and straight to the point.
 
-## Gaya Bahasa
+## When to Load
 
-- **Indo/English campur** — sesuai gaya obrolan kita, bukan formal kaku
-- **Santai tapi informatif** — bukan essay, bukan juga robot
-- **Singkat, langsung ke poin** — orang baca recap buat cepet tau, bukan buat baca novel
-- Tetap profesional di bagian teknis (file path, commit, command — tulis apa adanya)
+Load this skill when the user says:
+- "tldr", "recap", "summarize"
+- "where are we", "udah ngapain aja"
+- "ringkasan", "resume", "status dong"
+- `/tldr`
 
-## Format Output
+**Hermes:** Load via `skill_view(name='tldr')` — Hermes does not auto-trigger skills by keyword. The agent must explicitly load the skill when it recognizes the user's intent.
+
+**OpenClaw:** If your OpenClaw instance supports keyword-based skill activation, configure the trigger words above. Otherwise, load manually.
+
+## Tone
+
+- **Casual but informative** — not an essay, not a robot
+- **Short, straight to the point** — people read recaps to get up to speed fast, not to read a novel
+- **Mix of English and local language** — match the conversation style, not formal
+- Stay professional on technical details (file paths, commit hashes, commands — write them as-is)
+
+## Output Format
 
 ```
 ## Done
@@ -22,55 +38,55 @@ Bikin ringkasan cepat dari session. Formatnya ringkas, scannable, dan langsung k
 - ...
 
 ## Current task
-- Task: <nama>
+- Task: <name>
 - Status: <complete | in progress | blocked>
-- Last step: <terakhir ngapain>
-- Next step: <selanjutnya ngapain>
-- Blocker: <kenapa blocked> (kalau statusnya blocked)
+- Last step: <what was done last>
+- Next step: <what comes next>
+- Blocker: <why blocked> (only if status is blocked)
 ```
 
-## Aturan
+## Rules
 
-### Done (kerjaan selesai)
-- **Maksimal 5 bullets.** Satu baris per bullet.
-- **Maksimal 15 kata per bullet.**
-- **Group yang related** — jangan satu bullet per commit. Kalau 3 commit buat fix yang sama, jadiin satu bullet.
-- **Tulis hasilnya aja**, bukan prosesnya. "Fixed prayer times bug" bukan "Saya cek log, ternyata ada error di line 42, terus saya ubah..."
-- **Sertakan reference** kalau ada:
+### Done (completed work)
+- **Max 5 bullets.** One line per bullet.
+- **Max 15 words per bullet.**
+- **Group related items** — don't make one bullet per commit. If 3 commits fix the same thing, combine into one bullet.
+- **Write the result, not the process.** "Fixed prayer times bug" not "I checked the log, found an error on line 42, then I changed..."
+- **Include references** when available:
   - Commit: [`0d43184`](https://github.com/org/repo/commit/0d43184)
   - PR: [#446](https://github.com/org/repo/pull/446)
   - File: [`services/prayerTimes.ts`](services/prayerTimes.ts)
   - File + line: [`services/prayerTimes.ts:42`](services/prayerTimes.ts#L42)
-  - Kalau ga tau URL-nya, tulis aja plain identifier. Jangan ngarang URL.
+  - If you don't know the URL, write the plain identifier. Don't fabricate URLs.
 
-### Current task (task terakhir)
-- **Maksimal 5 field** (Task, Status, Last step, Next step, Blocker)
-- Satu baris per field
-- Blocker cuma ditulis kalau statusnya `blocked`
+### Current task (latest task)
+- **Max 5 fields** (Task, Status, Last step, Next step, Blocker)
+- One line per field
+- Blocker only written if status is `blocked`
 
 ### Hard limits
-- **Total maksimal 20 baris** (Done + Current task gabung)
-- Kalau kebanyakan, keep yang **highest impact** aja
-- Ga ada table, sub-bullets, atau code block di recap
-- Hapus narasi tool call — cuma tulis hasilnya
+- **Total max 20 lines** (Done + Current task combined)
+- If too many, keep the **highest impact** items only
+- No tables, sub-bullets, or code blocks in the recap
+- Strip tool call narration — only write the outcome
 
-### Konteks khusus
-- Kalau ga ada kerjaan selesai: tulis **"Belum ada yang selesai."** — jangan ngarang
-- Kalau session baru mulai: tulis **"Session baru, belum ada kerjaan."**
-- Recap ini buat **session yang lagi jalan aja**, bukan gabungan semua session
+### Edge cases
+- If no work completed: write **"Nothing completed yet."** — don't make things up
+- If session just started: write **"New session, no work done yet."**
+- Recap is for the **current session only**, not a combination of all sessions
 
-## Contoh
+## Example
 
 ```
 ## Done
-- Fixed duplicate adzan notifications. Debounce guard 4 detik. [`a30199c`](https://github.com/bipisurel-bps/Jadda-android-apps/commit/a30199c)
-- Updated doa100.json translations. 100 doa, 0 duplikat.
+- Fixed duplicate adzan notifications. Debounce guard 4 seconds. [`a30199c`](https://github.com/bipisurel-bps/Jadda-android-apps/commit/a30199c)
+- Updated doa100.json translations. 100 doas, 0 duplicates.
 - Built APK v1.3.0-vc15. [Download](https://gofile.io/d/CEvFA4)
 
 ## Current task
-- Task: Deploy ke Play Store
+- Task: Deploy to Play Store
 - Status: blocked
-- Last step: APK udah di-build, upload ke gofile
-- Next step: Upload AAB ke Google Play Console
-- Blocker: EAS free tier limit habis, nunggu reset
+- Last step: APK built, uploaded to gofile
+- Next step: Upload AAB to Google Play Console
+- Blocker: EAS free tier limit exhausted, waiting for reset
 ```
